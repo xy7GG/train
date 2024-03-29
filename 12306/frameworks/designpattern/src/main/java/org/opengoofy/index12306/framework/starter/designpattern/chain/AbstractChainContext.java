@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 
 /**
  * 抽象责任链上下文
- *
- * @公众号：马丁玩编程，回复：加群，添加马哥微信（备注：12306）获取项目资料
  */
 public final class AbstractChainContext<T> implements CommandLineRunner {
 
@@ -51,7 +49,13 @@ public final class AbstractChainContext<T> implements CommandLineRunner {
         }
         abstractChainHandlers.forEach(each -> each.handler(requestParam));
     }
-    
+
+    /**
+     * 加载处理器
+     *
+     * @param args
+     * @throws Exception
+     */
     @Override
     public void run(String... args) throws Exception {
         // 调用 SpirngIOC 工厂获取 AbstractChainHandler 接口类型的 Bean

@@ -41,8 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 车票控制层
- *
- * @公众号：马丁玩编程，回复：加群，添加马哥微信（备注：12306）获取项目资料
  */
 @RestController
 @RequiredArgsConstructor
@@ -55,7 +53,7 @@ public class TicketController {
      */
     @GetMapping("/api/ticket-service/ticket/query")
     public Result<TicketPageQueryRespDTO> pageListTicketQuery(TicketPageQueryReqDTO requestParam) {
-        return Results.success(ticketService.pageListTicketQueryV1(requestParam));
+        return Results.success(ticketService.pageListTicketQueryV2(requestParam));
     }
 
     /**
