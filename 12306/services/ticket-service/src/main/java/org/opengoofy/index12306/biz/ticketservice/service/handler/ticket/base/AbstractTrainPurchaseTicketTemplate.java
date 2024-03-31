@@ -46,7 +46,6 @@ public abstract class AbstractTrainPurchaseTicketTemplate implements IPurchaseTi
 
     /**
      * 选择座位
-     *
      * @param requestParam 购票请求入参
      * @return 乘车人座位
      */
