@@ -17,6 +17,7 @@
 
 package org.opengoofy.index12306.biz.ticketservice.controller;
 
+import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import org.opengoofy.index12306.biz.ticketservice.dto.req.CancelTicketOrderReqDTO;
 import org.opengoofy.index12306.biz.ticketservice.dto.req.PurchaseTicketReqDTO;
@@ -27,17 +28,24 @@ import org.opengoofy.index12306.biz.ticketservice.dto.resp.TicketPageQueryRespDT
 import org.opengoofy.index12306.biz.ticketservice.dto.resp.TicketPurchaseRespDTO;
 import org.opengoofy.index12306.biz.ticketservice.remote.dto.PayInfoRespDTO;
 import org.opengoofy.index12306.biz.ticketservice.service.TicketService;
+import org.opengoofy.index12306.framework.starter.cache.DistributedCache;
 import org.opengoofy.index12306.framework.starter.convention.result.Result;
 import org.opengoofy.index12306.framework.starter.idempotent.annotation.Idempotent;
 import org.opengoofy.index12306.framework.starter.idempotent.enums.IdempotentSceneEnum;
 import org.opengoofy.index12306.framework.starter.idempotent.enums.IdempotentTypeEnum;
 import org.opengoofy.index12306.framework.starter.log.annotation.ILog;
 import org.opengoofy.index12306.framework.starter.web.Results;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Objects;
+
+import static org.opengoofy.index12306.biz.ticketservice.common.constant.RedisKeyConstant.REGION_TRAIN_STATION_MAPPING;
 
 /**
  * 车票控制层
@@ -47,12 +55,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class TicketController {
 
     private final TicketService ticketService;
+    private final DistributedCache distributedCache;
 
     /**
      * 根据条件查询车票
      */
     @GetMapping("/api/ticket-service/ticket/query")
     public Result<TicketPageQueryRespDTO> pageListTicketQuery(TicketPageQueryReqDTO requestParam) {
+        StringRedisTemplate stringRedisTemplate = (StringRedisTemplate) distributedCache.getInstance();
+        List<Object> stationDetails = stringRedisTemplate.opsForHash()
+                .multiGet(REGION_TRAIN_STATION_MAPPING, Lists.newArrayList(requestParam.getFromStation(), requestParam.getToStation()));
+        long count = stationDetails.stream().filter(Objects::isNull).count();
+        if (count > 0) {
+           return Results.success(ticketService.pageListTicketQueryV1(requestParam));
+        }
         return Results.success(ticketService.pageListTicketQueryV2(requestParam));
     }
 

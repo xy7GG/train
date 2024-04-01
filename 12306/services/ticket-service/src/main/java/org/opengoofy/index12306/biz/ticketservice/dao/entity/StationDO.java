@@ -34,7 +34,7 @@ public class StationDO extends BaseDO {
     private Long id;
 
     /**
-     * 车站编码
+     * 车站Code
      */
     private String code;
 

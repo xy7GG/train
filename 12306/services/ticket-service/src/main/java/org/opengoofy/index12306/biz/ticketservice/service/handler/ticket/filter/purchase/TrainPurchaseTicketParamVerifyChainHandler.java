@@ -79,7 +79,7 @@ public class TrainPurchaseTicketParamVerifyChainHandler implements TrainPurchase
                 throw new ClientException("列车车次已出发禁止购票");
             }
         }
-        // 车站是否存在车次中，以及车站的顺序是否正确
+        // 车站是否存在车次中
         String trainStationStopoverDetailStr = distributedCache.safeGet(
                 TRAIN_STATION_STOPOVER_DETAIL + requestParam.getTrainId(),
                 String.class,
@@ -87,6 +87,7 @@ public class TrainPurchaseTicketParamVerifyChainHandler implements TrainPurchase
                     LambdaQueryWrapper<TrainStationDO> queryWrapper = Wrappers.lambdaQuery(TrainStationDO.class)
                             .eq(TrainStationDO::getTrainId, requestParam.getTrainId())
                             .select(TrainStationDO::getDeparture);
+                    //车站集合
                     List<TrainStationDO> actualTrainStationList = trainStationMapper.selectList(queryWrapper);
                     return CollUtil.isNotEmpty(actualTrainStationList) ? JSON.toJSONString(actualTrainStationList) : null;
                 },
@@ -94,6 +95,7 @@ public class TrainPurchaseTicketParamVerifyChainHandler implements TrainPurchase
                 TimeUnit.DAYS
         );
         List<TrainStationDO> trainDOList = JSON.parseArray(trainStationStopoverDetailStr, TrainStationDO.class);
+        //以及车站的顺序是否正确
         boolean validateStation = validateStation(
                 trainDOList.stream().map(TrainStationDO::getDeparture).toList(),
                 requestParam.getDeparture(),
